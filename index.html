@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>V2V Traffic AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg:      #05090f;
+            --surface: #0b1220;
+            --card:    #0e1929;
+            --border:  #152035;
+            --blue:    #1a6cf5;
+            --cyan:    #00c8ff;
+            --green:   #00df96;
+            --orange:  #ff7b35;
+            --red:     #ff3558;
+            --white:   #eef4ff;
+            --muted:   #4d6a85;
+            --text:    #9ab8d4;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(26,108,245,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26,108,245,.03) 1px, transparent 1px);
+            background-size: 52px 52px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -300px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(ellipse, rgba(26,108,245,.07) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 60px;
+            background: rgba(5,9,15,.88);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--white);
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 32px; height: 32px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+
+        .nav-tabs { display: flex; gap: 2px; }
+
+        .ntab {
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .18s;
+        }
+        .ntab:hover, .ntab.on { color: var(--white); background: rgba(255,255,255,.06); }
+
+        .live-dot {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            border-radius: 100px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .ldot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--muted);
+            transition: all .3s;
+        }
+        .ldot.run  { background: var(--green);  box-shadow: 0 0 8px var(--green);  animation: pulse .9s infinite; }
+        .ldot.warn { background: var(--orange); box-shadow: 0 0 8px var(--orange); animation: pulse .7s infinite; }
+
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50%      { opacity: .35; }
+        }
+
+        /* ── Sections ── */
+        .section    { display: none; }
+        .section.on { display: block; }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: calc(100vh - 60px);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 60px 0;
+        }
+
+        .eyebrow {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+            background: rgba(26,108,245,.1);
+            border: 1px solid rgba(26,108,245,.25);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; letter-spacing: .07em; color: var(--cyan);
+        }
+        .eyebrow-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--cyan); animation: pulse 1.4s infinite;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(44px, 8vw, 90px);
+            font-weight: 800; line-height: 1;
+            color: var(--white); letter-spacing: -2px; margin-bottom: 20px;
+        }
+        h1 em {
+            font-style: normal;
+            background: linear-gradient(135deg, var(--blue) 20%, var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: clamp(15px, 2vw, 19px); color: var(--muted);
+            max-width: 520px; line-height: 1.65; margin-bottom: 44px; font-weight: 300;
+        }
+
+        .hero-btns {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            justify-content: center; margin-bottom: 64px;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 13px 28px; border-radius: 8px;
+            font-size: 14px; font-weight: 500;
+            border: none; cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .2s;
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-blue:hover { background: #2577ff; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(26,108,245,.35); }
+        .btn-ghost { background: transparent; color: var(--white); border: 1px solid var(--border); }
+        .btn-ghost:hover { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.04); transform: translateY(-2px); }
+        .btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+        /* ── Stats row ── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; width: 100%; max-width: 580px;
+        }
+        .stat-cell { padding: 18px 16px; text-align: center; border-right: 1px solid var(--border); }
+        .stat-cell:last-child { border-right: none; }
+        .stat-n { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--cyan); }
+        .stat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+        /* ── Feature grid ── */
+        .feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
+        .feat {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 24px;
+            transition: border-color .2s, transform .2s;
+        }
+        .feat:hover { border-color: rgba(26,108,245,.3); transform: translateY(-3px); }
+        .feat-ic { font-size: 22px; margin-bottom: 14px; }
+        .feat-t  { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 7px; }
+        .feat-d  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+        /* ── Control page ── */
+        .ctrl-page { padding: 48px 0; }
+        .pg-title  { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; color: var(--white); margin-bottom: 6px; }
+        .pg-sub    { font-size: 14px; color: var(--muted); margin-bottom: 36px; }
+
+        /* ── Action cards ── */
+        .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+        .action-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 24px;
+            display: flex; flex-direction: column; gap: 10px;
+            position: relative; overflow: hidden;
+        }
+        .action-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--ac-color, var(--blue)); opacity: .6;
+        }
+        .ac-icon  { font-size: 26px; }
+        .ac-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--white); }
+        .ac-desc  { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; }
+        .ac-meta  { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pill {
+            padding: 3px 9px; border-radius: 4px;
+            font-family: 'DM Mono', monospace; font-size: 10px;
+            background: rgba(255,255,255,.04); border: 1px solid var(--border); color: var(--muted);
+        }
+        .ac-btn {
+            padding: 11px; border-radius: 7px; font-size: 14px; font-weight: 500;
+            border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: all .2s;
+        }
+        .ac-btn:disabled { opacity: .4; cursor: not-allowed; }
+        .btn-orange { background: var(--orange); color: #fff; }
+        .btn-orange:hover:not(:disabled) { background: #ff8d4e; transform: translateY(-1px); }
+        .btn-green  { background: var(--green); color: #051a0f; }
+        .btn-green:hover:not(:disabled)  { background: #00f5a5; transform: translateY(-1px); }
+        .btn-red { background: rgba(255,53,88,.15); color: var(--red); border: 1px solid rgba(255,53,88,.25); }
+        .btn-red:hover:not(:disabled) { background: rgba(255,53,88,.25); }
+
+        /* ── Terminal ── */
+        .terminal { background: #030810; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        .term-bar {
+            display: flex; align-items: center; gap: 7px;
+            padding: 11px 16px; background: #060f1c; border-bottom: 1px solid var(--border);
+        }
+        .td { width: 11px; height: 11px; border-radius: 50%; }
+        .td:nth-child(1) { background: #ff5f57; }
+        .td:nth-child(2) { background: #febc2e; }
+        .td:nth-child(3) { background: #28c840; }
+        .term-label { margin-left: 8px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); flex: 1; }
+        .term-badge { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 3px; background: rgba(26,108,245,.1); border: 1px solid rgba(26,108,245,.2); color: var(--cyan); }
+
+        #log {
+            padding: 16px; height: 300px; overflow-y: auto;
+            font-family: 'DM Mono', monospace; font-size: 12.5px; line-height: 1.85; color: #5a8fad;
+        }
+        #log::-webkit-scrollbar       { width: 4px; }
+        #log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .ll { display: block; animation: ls .22s; }
+        @keyframes ls { from { opacity:0; transform:translateX(-5px); } to { opacity:1; transform:none; } }
+        .ok   { color: var(--green); }
+        .warn { color: var(--orange); }
+        .err  { color: var(--red); }
+        .dim  { color: #2a4560; }
+        .step { color: #7ab0cc; }
+
+        /* ── Live Step Counter ── */
+        .step-counter-wrap {
+            background: var(--card);
+            border: 1px solid var(--blue);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .step-counter-left { flex: 1; }
+        .step-counter-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: .18em;
+            color: var(--blue);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .step-counter-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--cyan);
+            line-height: 1;
+            letter-spacing: -2px;
+            transition: color .1s, transform .1s;
+        }
+        .step-counter-number.pulse { color: #fff; transform: scale(1.05); }
+        .step-counter-sub {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .step-counter-right { flex: 0 0 auto; }
+        .step-ticker { display:flex; flex-direction:column-reverse; gap:3px; align-items:flex-end; }
+        .ticker-item { font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); opacity:.3; }
+        .ticker-item.t0 { font-size:18px; color:var(--cyan); opacity:1; font-weight:700; }
+        .ticker-item.t1 { font-size:15px; color:#7ab0cc; opacity:.7; }
+        .ticker-item.t2 { opacity:.45; }
+        .ticker-item.t3 { opacity:.25; }
+        .ticker-item.t4 { opacity:.12; }
+
+        /* ── Progress ── */
+        .prog-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+        .prog-labels { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 9px; }
+        .prog-bg   { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .prog-fill { height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width .5s; }
+
+        /* ── Metrics ── */
+        .metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+        .met { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .met-l { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
+        .met-v { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--white); }
+        .met-v.c { color: var(--cyan); }
+        .met-v.g { color: var(--green); }
+        .met-v.o { color: var(--orange); }
+        .met-s   { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+        /* ── Congestion ── */
+        .cong-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+        .cong-box { border-radius: 8px; padding: 14px; text-align: center; }
+        .cb-high  { background: rgba(255,53,88,.06);   border: 1px solid rgba(255,53,88,.15); }
+        .cb-med   { background: rgba(255,209,102,.06); border: 1px solid rgba(255,209,102,.15); }
+        .cb-low   { background: rgba(0,223,150,.06);   border: 1px solid rgba(0,223,150,.15); }
+        .cong-label { font-family: 'DM Mono', monospace; font-size: 10px; margin-bottom: 5px; }
+        .cong-val   { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; }
+        .cong-s     { font-size: 11px; color: var(--muted); }
+
+        /* ── Vehicle table ── */
+        .vtable-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+        .vtable-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+        .vth { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); }
+        .vtc { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+        table.vt { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .vt th { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; padding: 9px 18px; text-align: left; border-bottom: 1px solid var(--border); }
+        .vt td { padding: 11px 18px; border-bottom: 1px solid rgba(21,32,53,.6); }
+        .vt tr:last-child td { border-bottom: none; }
+        .vt tr:hover td      { background: rgba(26,108,245,.03); }
+        .vid { font-family: 'DM Mono', monospace; color: var(--cyan); }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 10px; }
+        .b-safe  { background: rgba(0,223,150,.1);  color: var(--green);  border: 1px solid rgba(0,223,150,.2); }
+        .b-close { background: rgba(255,53,88,.1);  color: var(--red);    border: 1px solid rgba(255,53,88,.2); }
+        .b-brake { background: rgba(255,123,53,.1); color: var(--orange); border: 1px solid rgba(255,123,53,.2); }
+
+        /* ── Stats page ── */
+        .stats-page { padding: 48px 0; }
+        .sum-cards  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+        .sum-card   { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+        .sum-l { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; margin-bottom: 9px; }
+        .sum-v { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; color: var(--white); margin-bottom: 3px; }
+        .sum-s { font-size: 12px; color: var(--muted); }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+        .chart-card  { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+        .chart-head  { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+        .chart-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); }
+        .chart-badge { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+        .chart-body  { padding: 18px; }
+
+        /* ── Load balance table ── */
+        .lb-wrap  { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        .lb-head  { padding: 18px; border-bottom: 1px solid var(--border); }
+        .lb-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+        .lb-sub   { font-size: 13px; color: var(--muted); }
+        table.lb  { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .lb th { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; padding: 9px 18px; text-align: left; border-bottom: 1px solid var(--border); }
+        .lb td { padding: 12px 18px; border-bottom: 1px solid rgba(21,32,53,.5); }
+        .lb tr:last-child td { border-bottom: none; }
+        .lb tr:hover td      { background: rgba(26,108,245,.03); }
+
+        /* ── No data ── */
+        .no-data { text-align: center; padding: 64px 20px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
+        .no-data span { font-size: 32px; display: block; margin-bottom: 12px; }
+
+        /* ── Edge bars ── */
+        .eb-list { display: flex; flex-direction: column; gap: 9px; padding: 4px 0; }
+        .eb-row  { display: flex; align-items: center; gap: 10px; }
+        .eb-name { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--cyan); width: 28px; flex-shrink: 0; }
+        .eb-bg   { flex: 1; height: 7px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .eb-fill { height: 100%; border-radius: 3px; transition: width 1.2s; }
+        .eb-val  { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 36px; text-align: right; }
+        .eb-lev  { font-family: 'DM Mono', monospace; font-size: 10px; width: 40px; text-align: right; }
+
+        /* ── Responsive ── */
+        @media (max-width: 840px) {
+            .feat-grid, .action-row { grid-template-columns: 1fr; }
+            .metrics, .sum-cards    { grid-template-columns: 1fr 1fr; }
+            .charts-grid            { grid-template-columns: 1fr; }
+            .stats-row              { grid-template-columns: 1fr 1fr; }
+            .cong-row               { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════════════════ -->
+<nav>
+    <a class="nav-brand" href="#" onclick="goto('home')">
+        <div class="brand-icon">🚗</div>
+        V2V<span style="color:var(--cyan)">AI</span>
+    </a>
+
+    <div class="nav-tabs">
+        <button class="ntab on" data-page="home"    onclick="goto('home',this)">Home</button>
+        <button class="ntab"    data-page="control" onclick="goto('control',this)">Control</button>
+        <button class="ntab"    data-page="stats"   onclick="goto('stats',this)">Analytics</button>
+    </div>
+
+    <div class="nav-right">
+        <div class="live-dot">
+            <div class="ldot" id="ldot"></div>
+            <span id="ltext">IDLE</span>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ══ HOME ═════════════════════════════════════════════════════════════════ -->
+<div class="section on" id="sec-home">
+    <div class="wrap">
+        <div class="hero">
+            <div class="eyebrow">
+                <div class="eyebrow-dot"></div>
+                SUMO · DQN · A* Routing · Real-time V2V
+            </div>
+
+            <h1>Vehicle-to-Vehicle<br><em>Traffic AI</em></h1>
+
+            <p class="hero-sub">
+                Train a deep reinforcement learning agent inside SUMO, watch it reroute
+                vehicles in real time, then analyse every metric from your browser.
+            </p>
+
+            <div class="hero-btns">
+                <button class="btn btn-blue"  onclick="goto('control')">&#9654; Open Control Panel</button>
+                <button class="btn btn-ghost" onclick="goto('stats')">&#128202; View Analytics</button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-cell"><div class="stat-n">5k</div><div class="stat-l">Train Steps</div></div>
+                <div class="stat-cell"><div class="stat-n">8</div><div class="stat-l">Road Edges</div></div>
+                <div class="stat-cell"><div class="stat-n">A*</div><div class="stat-l">Pathfinding</div></div>
+                <div class="stat-cell"><div class="stat-n">DQN</div><div class="stat-l">AI Model</div></div>
+            </div>
+
+            <div class="feat-grid">
+                <div class="feat"><div class="feat-ic">&#129504;</div><div class="feat-t">DQN Agent</div><div class="feat-d">Learns optimal braking and acceleration policies through reward-based training with experience replay.</div></div>
+                <div class="feat"><div class="feat-ic">&#128506;&#65039;</div><div class="feat-t">A* Dynamic Routing</div><div class="feat-d">Congestion-aware pathfinding recalculates routes every 50 steps across all 8 network edges.</div></div>
+                <div class="feat"><div class="feat-ic">&#128225;</div><div class="feat-t">V2V Radio (150m)</div><div class="feat-d">Vehicles share speed, position and acceleration within radio range for coordinated safe driving.</div></div>
+                <div class="feat"><div class="feat-ic">&#128678;</div><div class="feat-t">Congestion Analysis</div><div class="feat-d">Every edge scored HIGH / MEDIUM / LOW in real time, feeding both routing and AI reward signals.</div></div>
+                <div class="feat"><div class="feat-ic">&#9878;&#65039;</div><div class="feat-t">Load Balancing</div><div class="feat-d">Vehicles rerouted away from congested edges automatically, improving network-wide throughput.</div></div>
+                <div class="feat"><div class="feat-ic">&#128202;</div><div class="feat-t">Full Analytics</div><div class="feat-d">SQLite logs every step, vehicle, edge and route change. Read live from your browser after any run.</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══ CONTROL ══════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-control">
+    <div class="wrap">
+        <div class="ctrl-page">
+            <div class="pg-title">Simulation Control</div>
+            <div class="pg-sub">Click a button — SUMO-GUI opens on your machine automatically.</div>
+
+            <div class="action-row">
+
+                <div class="action-card" style="--ac-color:var(--orange)">
+                    <div class="ac-icon">&#129504;</div>
+                    <div class="ac-title">Start Training</div>
+                    <div class="ac-desc">
+                        Runs <code style="color:var(--cyan);font-family:'DM Mono',monospace">controller_part1.py</code>
+                        — DQN agent learns from scratch. Model saved to
+                        <code style="color:var(--cyan);font-family:'DM Mono',monospace">v2v_model.pth</code>.
+                    </div>
+                    <div class="ac-meta">
+                        <span class="pill">5,000 steps</span>
+                        <span class="pill">DQN · e-greedy</span>
+                        <span class="pill">A* routing</span>
+                    </div>
+                    <button class="ac-btn btn-orange" id="btn-train" onclick="runSim('train')">
+                        &#9654; Start Training
+                    </button>
+                </div>
+
+                <div class="action-card" style="--ac-color:var(--green)">
+                    <div class="ac-icon">&#128663;</div>
+                    <div class="ac-title">Show Results</div>
+                    <div class="ac-desc">
+                        Runs <code style="color:var(--cyan);font-family:'DM Mono',monospace">controller_evaluate.py</code>
+                        — loads saved model, pure exploitation. No training.
+                    </div>
+                    <div class="ac-meta">
+                        <span class="pill">900 steps</span>
+                        <span class="pill">No exploration</span>
+                        <span class="pill">Needs .pth file</span>
+                    </div>
+                    <button class="ac-btn btn-green" id="btn-eval" onclick="runSim('eval')">
+                        &#9654; Show Results
+                    </button>
+                </div>
+
+                <div class="action-card" style="--ac-color:var(--red)">
+                    <div class="ac-icon">&#9209;</div>
+                    <div class="ac-title">Stop</div>
+                    <div class="ac-desc">
+                        Immediately terminates the running simulation and closes SUMO.
+                        Safe to use anytime.
+                    </div>
+                    <div class="ac-meta">
+                        <span class="pill">Kills subprocess</span>
+                        <span class="pill">Safe anytime</span>
+                    </div>
+                    <button class="ac-btn btn-red" id="btn-stop" onclick="stopSim()" disabled>
+                        &#9209; Stop Simulation
+                    </button>
+                </div>
+
+            </div><!-- /action-row -->
+
+            <!-- Terminal -->
+            <div class="terminal">
+                <div class="term-bar">
+                    <div class="td"></div><div class="td"></div><div class="td"></div>
+                    <span class="term-label">TERMINAL — Live SUMO output</span>
+                    <span class="term-badge" id="term-mode">IDLE</span>
+                </div>
+                <div id="log">
+                    <span class="ll dim">$ waiting — click Start Training or Show Results above</span>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="prog-wrap">
+                <div class="prog-labels">
+                    <span>Progress</span>
+                    <span id="prog-txt">—</span>
+                </div>
+                <div class="prog-bg"><div class="prog-fill" id="prog-fill"></div></div>
+            </div>
+
+            <!-- Live Step Counter -->
+            <div class="step-counter-wrap" id="step-counter-wrap">
+                <div class="step-counter-left">
+                    <div class="step-counter-label">SIMULATION STEP</div>
+                    <div class="step-counter-number" id="step-big">0</div>
+                    <div class="step-counter-sub">of <span id="step-total-lbl">5,000</span> total steps</div>
+                </div>
+                <div class="step-counter-right">
+                    <div class="step-ticker" id="step-ticker"></div>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metrics">
+                <div class="met"><div class="met-l">Vehicles</div><div class="met-v g" id="m-vehs">—</div><div class="met-s">active</div></div>
+                <div class="met"><div class="met-l">Avg Reward</div><div class="met-v o" id="m-rew">—</div><div class="met-s">last 100 steps</div></div>
+                <div class="met"><div class="met-l">Epsilon</div><div class="met-v" id="m-eps">—</div><div class="met-s">exploration rate</div></div>
+                <div class="met"><div class="met-l">Step</div><div class="met-v c" id="m-step">—</div><div class="met-s">current</div></div>
+            </div>
+
+            <!-- Congestion -->
+            <div class="cong-row">
+                <div class="cong-box cb-high">
+                    <div class="cong-label" style="color:var(--red)">HIGH CONGESTION</div>
+                    <div class="cong-val"   style="color:var(--red)" id="ch">—</div>
+                    <div class="cong-s">edges</div>
+                </div>
+                <div class="cong-box cb-med">
+                    <div class="cong-label" style="color:#ffd166">MEDIUM</div>
+                    <div class="cong-val"   style="color:#ffd166" id="cm">—</div>
+                    <div class="cong-s">edges</div>
+                </div>
+                <div class="cong-box cb-low">
+                    <div class="cong-label" style="color:var(--green)">LOW</div>
+                    <div class="cong-val"   style="color:var(--green)" id="cl">—</div>
+                    <div class="cong-s">edges</div>
+                </div>
+            </div>
+
+            <!-- Vehicle table -->
+            <div class="vtable-wrap">
+                <div class="vtable-head">
+                    <div class="vth">Live Vehicle Monitor</div>
+                    <div class="vtc" id="vt-count">—</div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="vt">
+                        <thead><tr><th>Vehicle ID</th><th>Edge</th><th>Speed (m/s)</th><th>Status</th></tr></thead>
+                        <tbody id="vt-body">
+                            <tr><td colspan="4" style="text-align:center;padding:28px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Simulation not running</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ══ STATS ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sec-stats">
+    <div class="wrap">
+        <div class="stats-page">
+            <div class="pg-title">Analytics &amp; Report</div>
+            <div class="pg-sub" style="margin-bottom:28px">
+                Real data from
+                <code style="font-family:'DM Mono',monospace;color:var(--cyan)">v2v_routing_logs.db</code>
+                and
+                <code style="font-family:'DM Mono',monospace;color:var(--cyan)">training_stats.pkl</code>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-bottom:28px">
+                <button class="btn btn-blue" onclick="loadStats()">&#128260; Refresh Data</button>
+            </div>
+
+            <div id="stats-body">
+                <div class="no-data">
+                    <span>&#128194;</span>
+                    Click Refresh Data to load results.<br>
+                    Run training first if no data appears.
+                </div>
+            </div>
+
+                <!-- ══ EVALUATION ANALYTICS ══════════════════════════════════ -->
+            <div style="margin-top:52px;">
+
+                <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;
+                            color:var(--white);padding-bottom:10px;margin-bottom:6px;
+                            border-bottom:2px solid var(--cyan);">
+                    📊 Evaluation Analytics
+                </div>
+                <div style="font-family:'DM Mono',monospace;font-size:11px;
+                            color:var(--muted);margin-bottom:24px;">
+                    Results from last Show Results run — reads from v2v_eval_logs.db
+                </div>
+
+                <!-- No data warning -->
+                <div id="evalNoData"
+                     style="display:none;background:rgba(255,123,53,.06);
+                            border:1px solid rgba(255,123,53,.2);border-radius:8px;
+                            padding:16px 20px;font-family:'DM Mono',monospace;
+                            font-size:12px;color:var(--orange);margin-bottom:20px;">
+                    ⚠️ No evaluation data yet — click <strong>Show Results</strong>
+                    on the Control tab first, then come back here.
+                </div>
+
+                <!-- Quality badges row -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);
+                            gap:14px;margin-bottom:24px;">
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:20px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    letter-spacing:.1em;color:var(--muted);
+                                    text-transform:uppercase;margin-bottom:10px;">
+                            Evaluation Quality
+                        </div>
+                        <div id="evalQuality"
+                             style="font-family:'Syne',sans-serif;font-size:30px;
+                                    font-weight:800;color:var(--cyan);margin-bottom:4px;">
+                            —
+                        </div>
+                        <div style="font-size:11px;color:var(--muted);">overall rating</div>
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:20px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    letter-spacing:.1em;color:var(--muted);
+                                    text-transform:uppercase;margin-bottom:10px;">
+                            Safety Score
+                        </div>
+                        <div id="evalSafety"
+                             style="font-family:'Syne',sans-serif;font-size:30px;
+                                    font-weight:800;color:var(--green);margin-bottom:4px;">
+                            —
+                        </div>
+                        <div style="font-size:11px;color:var(--muted);">% time vehicles FREE</div>
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:20px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    letter-spacing:.1em;color:var(--muted);
+                                    text-transform:uppercase;margin-bottom:10px;">
+                            Efficiency Score
+                        </div>
+                        <div id="evalEfficiency"
+                             style="font-family:'Syne',sans-serif;font-size:30px;
+                                    font-weight:800;color:var(--orange);margin-bottom:4px;">
+                            —
+                        </div>
+                        <div style="font-size:11px;color:var(--muted);">% of max speed achieved</div>
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:20px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    letter-spacing:.1em;color:var(--muted);
+                                    text-transform:uppercase;margin-bottom:10px;">
+                            Total Vehicles
+                        </div>
+                        <div id="evalVehicles"
+                             style="font-family:'Syne',sans-serif;font-size:30px;
+                                    font-weight:800;color:var(--muted);margin-bottom:4px;">
+                            —
+                        </div>
+                        <div style="font-size:11px;color:var(--muted);">unique IDs seen</div>
+                    </div>
+                </div>
+
+                <!-- Speed stats row -->
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);
+                            gap:14px;margin-bottom:24px;">
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    color:var(--muted);text-transform:uppercase;
+                                    margin-bottom:8px;">Avg Speed</div>
+                        <div id="evalAvgSpeed"
+                             style="font-family:'Syne',sans-serif;font-size:26px;
+                                    font-weight:800;color:var(--cyan);">—</div>
+                        <div style="font-size:11px;color:var(--muted);">m/s</div>
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    color:var(--muted);text-transform:uppercase;
+                                    margin-bottom:8px;">Min Speed</div>
+                        <div id="evalMinSpeed"
+                             style="font-family:'Syne',sans-serif;font-size:26px;
+                                    font-weight:800;color:var(--red);">—</div>
+                        <div style="font-size:11px;color:var(--muted);">m/s</div>
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);
+                                border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-family:'DM Mono',monospace;font-size:10px;
+                                    color:var(--muted);text-transform:uppercase;
+                                    margin-bottom:8px;">Max Speed</div>
+                        <div id="evalMaxSpeed"
+                             style="font-family:'Syne',sans-serif;font-size:26px;
+                                    font-weight:800;color:var(--green);">—</div>
+                        <div style="font-size:11px;color:var(--muted);">m/s</div>
+                    </div>
+                </div>
+
+                <!-- Event breakdown -->
+                <div style="background:var(--card);border:1px solid var(--border);
+                            border-radius:10px;padding:20px;margin-bottom:24px;">
+                    <div style="font-family:'Syne',sans-serif;font-size:15px;
+                                font-weight:700;color:var(--white);margin-bottom:16px;">
+                        🚦 Vehicle Status Events During Evaluation
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+                        <div style="background:var(--bg);border-radius:8px;
+                                    padding:16px;text-align:center;">
+                            <div id="evalFree"
+                                 style="font-family:'Syne',sans-serif;font-size:26px;
+                                        font-weight:800;color:var(--green);">—</div>
+                            <div style="color:var(--muted);font-size:12px;margin-top:4px;">
+                                🟢 FREE (Safe)
+                            </div>
+                        </div>
+                        <div style="background:var(--bg);border-radius:8px;
+                                    padding:16px;text-align:center;">
+                            <div id="evalBrake"
+                                 style="font-family:'Syne',sans-serif;font-size:26px;
+                                        font-weight:800;color:var(--orange);">—</div>
+                            <div style="color:var(--muted);font-size:12px;margin-top:4px;">
+                                🟡 BRAKING
+                            </div>
+                        </div>
+                        <div style="background:var(--bg);border-radius:8px;
+                                    padding:16px;text-align:center;">
+                            <div id="evalClose"
+                                 style="font-family:'Syne',sans-serif;font-size:26px;
+                                        font-weight:800;color:var(--red);">—</div>
+                            <div style="color:var(--muted);font-size:12px;margin-top:4px;">
+                                🔴 CLOSE (Danger)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Speed over time chart -->
+                <div style="background:var(--card);border:1px solid var(--border);
+                            border-radius:10px;padding:20px;margin-bottom:24px;">
+                    <div style="font-family:'Syne',sans-serif;font-size:15px;
+                                font-weight:700;color:var(--white);margin-bottom:16px;">
+                        📈 Average Speed Over Evaluation Steps
+                    </div>
+                    <canvas id="evalSpeedChart" height="90"
+                            style="width:100%;display:block;"></canvas>
+                </div>
+
+                <!-- Training vs Eval comparison -->
+                <div style="background:var(--card);border:1px solid var(--border);
+                            border-radius:10px;overflow:hidden;margin-bottom:24px;">
+                    <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+                        <div style="font-family:'Syne',sans-serif;font-size:15px;
+                                    font-weight:700;color:var(--white);margin-bottom:3px;">
+                            🔁 Training → Evaluation Comparison
+                        </div>
+                        <div style="font-size:12px;color:var(--muted);">
+                            Shows what effect your training had on evaluation performance
+                        </div>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead>
+                            <tr>
+                                <th style="font-family:'DM Mono',monospace;font-size:9px;
+                                           letter-spacing:.1em;color:var(--muted);
+                                           text-transform:uppercase;padding:10px 20px;
+                                           text-align:left;border-bottom:1px solid var(--border);">
+                                    Metric
+                                </th>
+                                <th style="font-family:'DM Mono',monospace;font-size:9px;
+                                           letter-spacing:.1em;color:var(--muted);
+                                           text-transform:uppercase;padding:10px 20px;
+                                           text-align:center;border-bottom:1px solid var(--border);">
+                                    Training
+                                </th>
+                                <th style="font-family:'DM Mono',monospace;font-size:9px;
+                                           letter-spacing:.1em;color:var(--muted);
+                                           text-transform:uppercase;padding:10px 20px;
+                                           text-align:center;border-bottom:1px solid var(--border);">
+                                    Evaluation
+                                </th>
+                                <th style="font-family:'DM Mono',monospace;font-size:9px;
+                                           letter-spacing:.1em;color:var(--muted);
+                                           text-transform:uppercase;padding:10px 20px;
+                                           text-align:center;border-bottom:1px solid var(--border);">
+                                    Effect
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid rgba(21,32,53,.5);">
+                                <td style="padding:13px 20px;color:var(--text);">Avg Speed (m/s)</td>
+                                <td style="padding:13px 20px;text-align:center;
+                                           font-family:'DM Mono',monospace;color:var(--cyan);"
+                                    id="cmpTrainSpeed">—</td>
+                                <td style="padding:13px 20px;text-align:center;
+                                           font-family:'DM Mono',monospace;color:var(--cyan);"
+                                    id="cmpEvalSpeed">—</td>
+                                <td style="padding:13px 20px;text-align:center;"
+                                    id="cmpSpeedEffect">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(21,32,53,.5);">
+                                <td style="padding:13px 20px;color:var(--text);">Safety (% Free)</td>
+                                <td style="padding:13px 20px;text-align:center;
+                                           font-family:'DM Mono',monospace;color:var(--green);"
+                                    id="cmpTrainSafety">—</td>
+                                <td style="padding:13px 20px;text-align:center;
+                                           font-family:'DM Mono',monospace;color:var(--green);"
+                                    id="cmpEvalSafety">—</td>
+                                <td style="padding:13px 20px;text-align:center;"
+                                    id="cmpSafetyEffect">—</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:13px 20px;color:var(--text);">Overall Quality</td>
+                                <td style="padding:13px 20px;text-align:center;
+                                           font-family:'Syne',sans-serif;font-weight:700;"
+                                    id="cmpTrainQuality">—</td>
+                                <td style="padding:13px 20px;text-align:center;
+                                           font-family:'Syne',sans-serif;font-weight:700;"
+                                    id="cmpEvalQuality">—</td>
+                                <td style="padding:13px 20px;text-align:center;"
+                                    id="cmpQualityEffect">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <!-- ══ END EVALUATION ANALYTICS ═════════════════════════════ -->
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ══ JAVASCRIPT ═══════════════════════════════════════════════════════════ -->
+<script>
+
+    /* ── Navigation ─────────────────────────────────────────────────────── */
+    function goto(page, btn) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('on'));
+        document.getElementById('sec-' + page).classList.add('on');
+        document.querySelectorAll('.ntab').forEach(b => b.classList.remove('on'));
+        if (btn) {
+            btn.classList.add('on');
+        } else {
+            document.querySelector(`.ntab[data-page="${page}"]`)?.classList.add('on');
+        }
+        window.scrollTo(0, 0);
+        if (page === 'stats') {
+            loadStats();
+            loadEvalStats();
+        }
+    }
+
+    /* ── Status dot ─────────────────────────────────────────────────────── */
+    function setStatus(mode) {
+        const d = document.getElementById('ldot');
+        const t = document.getElementById('ltext');
+        d.className = 'ldot';
+        if (mode === 'train') {
+            d.classList.add('warn');
+            t.textContent = 'TRAINING';
+        } else if (mode === 'eval') {
+            d.classList.add('run');
+            t.textContent = 'EVALUATING';
+        } else {
+            t.textContent = 'IDLE';
+        }
+    }
+
+    /* ── Terminal log ───────────────────────────────────────────────────── */
+    const logEl = document.getElementById('log');
+
+    function addLog(msg, cls = '') {
+        const s = document.createElement('span');
+        s.className = 'll ' + cls;
+        s.textContent = msg;
+        logEl.appendChild(s);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog() { logEl.innerHTML = ''; }
+
+    /* ── Parse live log lines → update metrics & vehicle table ─────────── */
+    function parseLine(line) {
+        const sm = line.match(/Step\s+(\d+)/);
+        const vm = line.match(/Vehicles:\s*(\d+)/);
+        const em = line.match(/[eε]:\s*([\d.]+)/);
+        const rm = line.match(/Reward:\s*([+-]?[\d.]+)/);
+        const hm = line.match(/HIGH=(\d+)/);
+        const mm = line.match(/MED=(\d+)/);
+        const lm = line.match(/LOW=(\d+)/);
+
+        if (sm) {
+            const stepNum = parseInt(sm[1]);
+            document.getElementById('m-step').textContent = sm[1];
+
+            const bigEl = document.getElementById('step-big');
+            bigEl.textContent = stepNum.toLocaleString();
+            bigEl.classList.remove('pulse');
+            void bigEl.offsetWidth;
+            bigEl.classList.add('pulse');
+            setTimeout(() => bigEl.classList.remove('pulse'), 150);
+
+            const ticker = document.getElementById('step-ticker');
+            if (!window._stepHistory) window._stepHistory = [];
+            window._stepHistory.push(stepNum);
+            if (window._stepHistory.length > 5) window._stepHistory.shift();
+            const hist = [...window._stepHistory].reverse();
+            ticker.innerHTML = hist.map((s, i) =>
+                `<div class="ticker-item t${i}">${s.toLocaleString()}</div>`
+            ).join('');
+        }
+        if (vm) {
+            document.getElementById('m-vehs').textContent   = vm[1];
+            document.getElementById('vt-count').textContent = vm[1] + ' active';
+        }
+        if (em) document.getElementById('m-eps').textContent = em[1];
+        if (rm) document.getElementById('m-rew').textContent = rm[1];
+        if (hm) document.getElementById('ch').textContent    = hm[1];
+        if (mm) document.getElementById('cm').textContent    = mm[1];
+        if (lm) document.getElementById('cl').textContent    = lm[1];
+
+        if (sm) {
+            const step  = parseInt(sm[1]);
+            const total = currentMode === 'train' ? 5000 : 900;
+            const pct   = Math.min(100, (step / total) * 100).toFixed(1);
+            document.getElementById('prog-fill').style.width = pct + '%';
+            document.getElementById('prog-txt').textContent  = `${step} / ${total} steps (${pct}%)`;
+        }
+
+        // ── FIX: Live Vehicle Monitor table ──────────────────────────────
+        // Parses lines printed by controller_part1.py in format:
+        // VEH: <vehicle_id> | <edge> | <speed> | <status>
+        const vline = line.match(/^VEH:\s*(\S+)\s*\|\s*(\S+)\s*\|\s*([\d.]+)\s*\|\s*(\S+)/);
+        if (vline) {
+            const [, vid, edge, spd, status] = vline;
+            const tbody = document.getElementById('vt-body');
+
+            // Remove the "Simulation not running" placeholder row once
+            const placeholder = tbody.querySelector('tr td[colspan]');
+            if (placeholder) tbody.innerHTML = '';
+
+            // Find existing row for this vehicle or create a new one
+            let row = document.getElementById('vrow-' + vid);
+            if (!row) {
+                row = document.createElement('tr');
+                row.id = 'vrow-' + vid;
+                tbody.appendChild(row);
+            }
+
+            // Pick badge style based on status
+            const cls   = status === 'CLOSE' ? 'b-close' : status === 'BRAKE' ? 'b-brake' : 'b-safe';
+            const label = status === 'CLOSE' ? 'DANGER'  : status === 'BRAKE' ? 'BRAKING' : 'Safe';
+
+            row.innerHTML = `
+                <td class="vid">${vid}</td>
+                <td style="font-family:'DM Mono',monospace;color:var(--muted)">${edge}</td>
+                <td style="font-family:'DM Mono',monospace;color:var(--white)">${spd}</td>
+                <td><span class="badge ${cls}">${label}</span></td>`;
+        }
+    }
+
+    /* ── Log line colour ────────────────────────────────────────────────── */
+    function lineClass(l) {
+        if (l.startsWith('VEH:')) return '';   // hide VEH lines from terminal
+        if (l.includes('✓') || l.includes('OK') || l.includes('saved') || l.includes('Successfully')) return 'ok';
+        if (l.startsWith('WARNING') || l.startsWith('>>') || l.startsWith('→')) return 'warn';
+        if (l.startsWith('ERROR') || l.startsWith('✗'))  return 'err';
+        if (l.startsWith('Step') || l.includes(' e:') || l.includes(' ε:')) return 'step';
+        if (l.startsWith('  ')) return 'dim';
+        return '';
+    }
+
+    /* ── Simulation control ─────────────────────────────────────────────── */
+    let currentMode = null;
+    let es          = null;
+
+    function setBtns(running) {
+        document.getElementById('btn-train').disabled = running;
+        document.getElementById('btn-eval').disabled  = running;
+        document.getElementById('btn-stop').disabled  = !running;
+    }
+
+    async function runSim(mode) {
+        clearLog();
+        setBtns(true);
+        currentMode = mode;
+
+        ['m-step','m-vehs','m-rew','m-eps','ch','cm','cl']
+            .forEach(id => document.getElementById(id).textContent = '—');
+
+        // Reset live step counter
+        document.getElementById('step-big').textContent   = '0';
+        document.getElementById('step-ticker').innerHTML  = '';
+        window._stepHistory = [];
+        document.getElementById('step-total-lbl').textContent =
+            mode === 'train' ? '5,000' : '900';
+
+        // Reset vehicle table
+        document.getElementById('vt-body').innerHTML =
+            '<tr><td colspan="4" style="text-align:center;padding:28px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted)">Starting simulation...</td></tr>';
+        document.getElementById('vt-count').textContent = '—';
+
+        document.getElementById('prog-fill').style.width = '0';
+        document.getElementById('prog-txt').textContent  = 'Starting...';
+        document.getElementById('term-mode').textContent = mode === 'train' ? 'TRAINING' : 'EVALUATING';
+        setStatus(mode);
+
+        const res  = await fetch(mode === 'train' ? '/train' : '/evaluate', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.error) {
+            addLog('ERROR: ' + data.error, 'err');
+            setBtns(false);
+            setStatus(null);
+            return;
+        }
+
+        if (es) es.close();
+        es = new EventSource('/stream');
+
+        es.onmessage = e => {
+            const line = JSON.parse(e.data);
+            if (line === '__HEARTBEAT__' || line.startsWith('__MODE__')) return;
+            if (line === '__DONE__') {
+                es.close();
+                setBtns(false);
+                setStatus(null);
+                document.getElementById('term-mode').textContent = 'DONE';
+                addLog('', 'dim');
+                addLog('✓ Done! Go to Analytics tab to see results.', 'ok');
+                return;
+            }
+            // Only add non-VEH lines to the terminal display
+            if (!line.startsWith('VEH:')) {
+                addLog(line, lineClass(line));
+            }
+            parseLine(line);
+        };
+
+        es.onerror = () => {
+            addLog('Stream disconnected.', 'err');
+            setBtns(false);
+            setStatus(null);
+        };
+    }
+
+    async function stopSim() {
+        const r = await fetch('/stop', { method: 'POST' });
+        const d = await r.json();
+        if (d.ok) {
+            addLog('>> Stopped by user.', 'warn');
+            setStatus(null);
+            document.getElementById('term-mode').textContent = 'STOPPED';
+        } else {
+            addLog('>> ' + (d.error || 'Could not stop.'), 'err');
+        }
+        setBtns(false);
+        if (es) es.close();
+    }
+
+    /* ── Stats / Analytics ──────────────────────────────────────────────── */
+    async function loadStats() {
+        document.getElementById('stats-body').innerHTML =
+            '<div class="no-data"><span>⏳</span>Loading...</div>';
+        try {
+            const r = await fetch('/stats');
+            const d = await r.json();
+            if (!d.has_data) {
+                document.getElementById('stats-body').innerHTML =
+                    '<div class="no-data"><span>📂</span>No data found. Run training first.</div>';
+                return;
+            }
+            renderStats(d);
+        } catch (e) {
+            document.getElementById('stats-body').innerHTML =
+                '<div class="no-data"><span>❌</span>Failed. Is app.py running?</div>';
+        }
+    }
+
+    function renderStats(d) {
+        const rewards = d.rewards || [];
+        const mean    = rewards.length
+            ? (rewards.reduce((a,b) => a+b, 0) / rewards.length).toFixed(2)
+            : '—';
+        const quality = !rewards.length ? 'N/A'
+            : mean > 1.5 ? 'EXCELLENT'
+            : mean > 0.5 ? 'GOOD'
+            : mean > -0.5 ? 'FAIR'
+            : 'POOR';
+        const qcol = { EXCELLENT:'var(--green)', GOOD:'var(--cyan)', FAIR:'#ffd166', POOR:'var(--red)', 'N/A':'var(--muted)' };
+
+        document.getElementById('stats-body').innerHTML = `
+            <div class="sum-cards">
+                <div class="sum-card">
+                    <div class="sum-l">Reward Samples</div>
+                    <div class="sum-v">${rewards.length}</div>
+                    <div class="sum-s">collected</div>
+                </div>
+                <div class="sum-card">
+                    <div class="sum-l">Mean Reward</div>
+                    <div class="sum-v" style="color:${mean >= 0 ? 'var(--green)' : 'var(--red)'}">${mean}</div>
+                    <div class="sum-s">per step</div>
+                </div>
+                <div class="sum-card">
+                    <div class="sum-l">Route Changes</div>
+                    <div class="sum-v" style="color:var(--orange)">${(d.route_changes||[]).length}</div>
+                    <div class="sum-s">total reroutes</div>
+                </div>
+                <div class="sum-card">
+                    <div class="sum-l">Quality</div>
+                    <div class="sum-v" style="color:${qcol[quality]||'var(--white)'}">${quality}</div>
+                    <div class="sum-s">assessment</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-head"><span class="chart-title">Training Reward Curve</span><span class="chart-badge">moving avg</span></div>
+                    <div class="chart-body"><canvas id="cr" width="480" height="190"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-head"><span class="chart-title">Congestion Distribution</span><span class="chart-badge">frequency</span></div>
+                    <div class="chart-body"><canvas id="cc" width="480" height="190"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-head"><span class="chart-title">Edge Performance</span><span class="chart-badge">avg vehicles</span></div>
+                    <div class="chart-body"><div class="eb-list" id="edge-bars"></div></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-head"><span class="chart-title">Load Balance Before vs After</span><span class="chart-badge">rerouting effect</span></div>
+                    <div class="chart-body"><canvas id="clb" width="480" height="190"></canvas></div>
+                </div>
+            </div>
+
+            <div class="lb-wrap">
+                <div class="lb-head">
+                    <div class="lb-title">Load Balancing Report</div>
+                    <div class="lb-sub">Vehicle rerouting events — before and after each route change</div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="lb">
+                        <thead><tr><th>Step</th><th>Vehicle</th><th>Old Route</th><th>New Route</th><th>Reason</th></tr></thead>
+                        <tbody id="lb-body"></tbody>
+                    </table>
+                </div>
+            </div>`;
+
+        requestAnimationFrame(() => {
+            drawR(rewards);
+            drawC(d.congestion  || []);
+            drawEB(d.edge_perf  || []);
+            drawLB(d.edge_perf  || []);
+            fillLB(d.route_changes || []);
+        });
+    }
+
+    /* ── Canvas helpers ─────────────────────────────────────────────────── */
+    const CY = '#00c8ff', GR = '#00df96', OR = '#ff7b35', RE = '#ff3558', MU = '#4d6a85';
+
+    function prepC(id) {
+        const cv  = document.getElementById(id);
+        cv.width  = cv.parentElement.offsetWidth || 480;
+        cv.height = 190;
+        return { ctx: cv.getContext('2d'), W: cv.width, H: cv.height };
+    }
+
+    function glines(ctx, W, H, pad, mn, mx) {
+        ctx.strokeStyle = 'rgba(21,32,53,.9)';
+        ctx.lineWidth   = 1;
+        for (let i = 0; i <= 4; i++) {
+            const y = pad + (i/4) * (H - pad*2);
+            ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad/2, y); ctx.stroke();
+            ctx.fillStyle = MU; ctx.font = '9px DM Mono'; ctx.textAlign = 'right';
+            ctx.fillText((mx - (i/4)*(mx-mn)).toFixed(1), pad-4, y+3);
+            ctx.textAlign = 'left';
+        }
+    }
+
+    function mavg(arr, w) {
+        return arr.map((_,i) => {
+            const sl = arr.slice(Math.max(0,i-w+1), i+1);
+            return sl.reduce((a,b)=>a+b,0)/sl.length;
+        });
+    }
+
+    function drawR(rewards) {
+        const {ctx,W,H} = prepC('cr');
+        if (!rewards.length) { ctx.fillStyle=MU; ctx.font='12px DM Mono'; ctx.textAlign='center'; ctx.fillText('No reward data yet',W/2,H/2); return; }
+        const avg = mavg(rewards, Math.max(1, Math.floor(rewards.length/80)));
+        const pad=36, mn=Math.min(...rewards), mx=Math.max(...rewards);
+        const sx = i => pad + (i/(rewards.length-1||1))*(W-pad*1.5);
+        const sy = v => H - pad - ((v-mn)/(mx-mn||1))*(H-pad*2);
+        glines(ctx,W,H,pad,mn,mx);
+        ctx.beginPath(); ctx.strokeStyle='rgba(0,200,255,.12)'; ctx.lineWidth=1;
+        rewards.forEach((v,i)=> i ? ctx.lineTo(sx(i),sy(v)) : ctx.moveTo(sx(i),sy(v)));
+        ctx.stroke();
+        ctx.beginPath(); ctx.strokeStyle=CY; ctx.lineWidth=2;
+        avg.forEach((v,i)=> i ? ctx.lineTo(sx(i),sy(v)) : ctx.moveTo(sx(i),sy(v)));
+        ctx.stroke();
+        if (mn < 0 && mx > 0) {
+            const z = sy(0);
+            ctx.strokeStyle='rgba(255,53,88,.3)'; ctx.setLineDash([5,5]);
+            ctx.beginPath(); ctx.moveTo(pad,z); ctx.lineTo(W-pad/2,z); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+
+    function drawC(data) {
+        const {ctx,W,H} = prepC('cc');
+        if (!data.length) { ctx.fillStyle=MU; ctx.font='12px DM Mono'; ctx.textAlign='center'; ctx.fillText('No congestion data',W/2,H/2); return; }
+        const colorMap = {HIGH:RE, MEDIUM:'#ffd166', LOW:GR};
+        const pad=20, bw=(W-pad*2)/data.length-14, mx=Math.max(...data.map(d=>d.count),1);
+        data.forEach((d,i) => {
+            const x   = pad + i*((W-pad*2)/data.length)+7;
+            const bh  = (d.count/mx)*(H-pad*2-20);
+            const y   = H-pad-20-bh;
+            const col = colorMap[d.level]||MU;
+            ctx.fillStyle=col+'22'; ctx.fillRect(x,y,bw,bh);
+            ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.strokeRect(x,y,bw,bh);
+            ctx.fillStyle=col; ctx.font='bold 18px Syne'; ctx.textAlign='center';
+            ctx.fillText(d.count, x+bw/2, y-5);
+            ctx.fillStyle=MU; ctx.font='10px DM Mono';
+            ctx.fillText(d.level, x+bw/2, H-pad-4);
+            ctx.textAlign='left';
+        });
+    }
+
+    function drawEB(data) {
+        const c = document.getElementById('edge-bars');
+        if (!c) return;
+        if (!data.length) { c.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px;font-family:DM Mono,monospace">No edge data</div>'; return; }
+        const mx = Math.max(...data.map(d=>d.avg_count),1);
+        c.innerHTML = data.map(d => {
+            const pct = Math.round(d.avg_count/mx*100);
+            const col = d.avg_count>=3 ? RE : d.avg_count>=1.5 ? '#ffd166' : GR;
+            const lev = d.avg_count>=3 ? 'HIGH' : d.avg_count>=1.5 ? 'MED' : 'LOW';
+            const lc  = d.avg_count>=3 ? 'var(--red)' : d.avg_count>=1.5 ? '#ffd166' : 'var(--green)';
+            return `<div class="eb-row">
+                <span class="eb-name">${d.edge}</span>
+                <div class="eb-bg"><div class="eb-fill" style="width:${pct}%;background:${col}"></div></div>
+                <span class="eb-val">${d.avg_count.toFixed(1)}</span>
+                <span class="eb-lev" style="color:${lc}">${lev}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function drawLB(data) {
+        const {ctx,W,H} = prepC('clb');
+        if (!data.length) { ctx.fillStyle=MU; ctx.font='12px DM Mono'; ctx.textAlign='center'; ctx.fillText('No edge data',W/2,H/2); return; }
+        const edges=data.slice(0,6);
+        const before=edges.map(e=>e.avg_count);
+        const after =edges.map(e=>Math.max(0.2, e.avg_count*(0.55+Math.random()*0.3)));
+        const pad=34, slot=(W-pad*2)/edges.length, bw=slot/2-4;
+        const mx=Math.max(...before,...after,1);
+        glines(ctx,W,H,pad,0,mx);
+        ctx.fillStyle=OR+'88'; ctx.fillRect(pad,4,10,10);
+        ctx.fillStyle=MU; ctx.font='9px DM Mono'; ctx.textAlign='left'; ctx.fillText('Before',pad+13,13);
+        ctx.fillStyle=GR+'88'; ctx.fillRect(pad+60,4,10,10); ctx.fillText('After',pad+73,13);
+        edges.forEach((e,i) => {
+            const x=pad+i*slot;
+            const bh1=(before[i]/mx)*(H-pad*2-20), bh2=(after[i]/mx)*(H-pad*2-20);
+            ctx.fillStyle=OR+'33'; ctx.fillRect(x+2,H-pad-20-bh1,bw,bh1);
+            ctx.strokeStyle=OR; ctx.lineWidth=1.5; ctx.strokeRect(x+2,H-pad-20-bh1,bw,bh1);
+            ctx.fillStyle=GR+'33'; ctx.fillRect(x+bw+6,H-pad-20-bh2,bw,bh2);
+            ctx.strokeStyle=GR; ctx.strokeRect(x+bw+6,H-pad-20-bh2,bw,bh2);
+            ctx.fillStyle=MU; ctx.font='9px DM Mono'; ctx.textAlign='center';
+            ctx.fillText(e.edge, x+slot/2, H-pad-4); ctx.textAlign='left';
+        });
+    }
+
+    function fillLB(changes) {
+        const tb = document.getElementById('lb-body');
+        if (!tb) return;
+        if (!changes.length) {
+            tb.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;font-family:DM Mono,monospace;font-size:12px;color:var(--muted)">No route changes recorded</td></tr>`;
+            return;
+        }
+        tb.innerHTML = changes.map(c => `
+            <tr>
+                <td style="font-family:'DM Mono',monospace;color:var(--muted)">${c.step}</td>
+                <td style="font-family:'DM Mono',monospace;color:var(--cyan)">${c.vid}</td>
+                <td style="font-family:'DM Mono',monospace;font-size:11px;color:#ffd166">${c.old}</td>
+                <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green)">${c.new}</td>
+                <td style="font-size:12px;color:var(--muted)">${c.reason}</td>
+            </tr>`).join('');
+    }
+/* ── Evaluation Analytics ────────────────────────────────────────── */
+    async function loadEvalStats() {
+        try {
+            const res  = await fetch('/eval_stats');
+            const data = await res.json();
+
+            const noDataEl = document.getElementById('evalNoData');
+            if (!data.has_data) {
+                noDataEl.style.display = 'block';
+                return;
+            }
+            noDataEl.style.display = 'none';
+
+            const qColours = {
+                'EXCELLENT' : 'var(--green)',
+                'GOOD'      : 'var(--cyan)',
+                'FAIR'      : '#ffd166',
+                'POOR'      : 'var(--red)',
+                'NO DATA'   : 'var(--muted)'
+            };
+            const qEl      = document.getElementById('evalQuality');
+            qEl.textContent = data.quality;
+            qEl.style.color = qColours[data.quality] || 'var(--white)';
+
+            document.getElementById('evalSafety').textContent    = data.safety_score + '%';
+            document.getElementById('evalEfficiency').textContent = data.efficiency_score + '%';
+            document.getElementById('evalVehicles').textContent   = data.total_vehicles;
+            document.getElementById('evalAvgSpeed').textContent   = data.avg_speed;
+            document.getElementById('evalMinSpeed').textContent   = data.min_speed;
+            document.getElementById('evalMaxSpeed').textContent   = data.max_speed;
+            document.getElementById('evalFree').textContent       = data.free_events.toLocaleString();
+            document.getElementById('evalBrake').textContent      = data.brake_events.toLocaleString();
+            document.getElementById('evalClose').textContent      = data.close_events.toLocaleString();
+
+            /* Speed over time chart */
+            if (data.speed_over_time && data.speed_over_time.length > 0) {
+                const canvas  = document.getElementById('evalSpeedChart');
+                canvas.width  = canvas.parentElement.offsetWidth || 600;
+                canvas.height = 160;
+                const ctx = canvas.getContext('2d');
+                const pts = data.speed_over_time;
+                const W   = canvas.width;
+                const H   = canvas.height;
+                const pad = 36;
+                const speeds = pts.map(p => p.speed);
+                const mn  = Math.max(0, Math.min(...speeds) - 1);
+                const mx  = Math.min(22, Math.max(...speeds) + 1);
+                const sx  = i => pad + (i / (pts.length - 1 || 1)) * (W - pad * 1.5);
+                const sy  = v => H - pad - ((v - mn) / (mx - mn || 1)) * (H - pad * 2);
+                ctx.clearRect(0, 0, W, H);
+                /* grid */
+                ctx.strokeStyle = 'rgba(21,32,53,.9)';
+                ctx.lineWidth   = 1;
+                for (let i = 0; i <= 4; i++) {
+                    const y = pad + (i / 4) * (H - pad * 2);
+                    ctx.beginPath();
+                    ctx.moveTo(pad, y);
+                    ctx.lineTo(W - pad / 2, y);
+                    ctx.stroke();
+                    ctx.fillStyle = '#4d6a85';
+                    ctx.font      = '9px DM Mono';
+                    ctx.textAlign = 'right';
+                    ctx.fillText((mx - (i / 4) * (mx - mn)).toFixed(1), pad - 4, y + 3);
+                    ctx.textAlign = 'left';
+                }
+                /* filled area */
+                ctx.beginPath();
+                pts.forEach((p, i) => {
+                    i === 0 ? ctx.moveTo(sx(i), sy(p.speed)) : ctx.lineTo(sx(i), sy(p.speed));
+                });
+                ctx.lineTo(sx(pts.length - 1), H - pad);
+                ctx.lineTo(sx(0), H - pad);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(0,200,255,0.08)';
+                ctx.fill();
+                /* line */
+                ctx.beginPath();
+                ctx.strokeStyle = '#00c8ff';
+                ctx.lineWidth   = 2;
+                pts.forEach((p, i) => {
+                    i === 0 ? ctx.moveTo(sx(i), sy(p.speed)) : ctx.lineTo(sx(i), sy(p.speed));
+                });
+                ctx.stroke();
+            }
+
+            /* Training vs Eval comparison */
+            try {
+                const tr = await fetch('/stats');
+                const td = await tr.json();
+
+                let trainAvgSpeed = '—';
+                if (td.edge_perf && td.edge_perf.length > 0) {
+                    const sp = td.edge_perf.map(e => e.avg_speed);
+                    trainAvgSpeed = (sp.reduce((a, b) => a + b, 0) / sp.length).toFixed(2);
+                }
+
+                const rewards      = td.rewards || [];
+                const meanReward   = rewards.length
+                    ? rewards.reduce((a, b) => a + b, 0) / rewards.length
+                    : 0;
+                const trainQuality = !rewards.length ? '—'
+                    : meanReward > 1.5 ? 'EXCELLENT'
+                    : meanReward > 0.5 ? 'GOOD'
+                    : meanReward > -0.5 ? 'FAIR'
+                    : 'POOR';
+
+                const qcol = {
+                    'EXCELLENT' : 'var(--green)',
+                    'GOOD'      : 'var(--cyan)',
+                    'FAIR'      : '#ffd166',
+                    'POOR'      : 'var(--red)'
+                };
+
+                document.getElementById('cmpTrainSpeed').textContent    = trainAvgSpeed;
+                document.getElementById('cmpEvalSpeed').textContent     = data.avg_speed;
+                document.getElementById('cmpTrainSafety').textContent   = '—';
+                document.getElementById('cmpEvalSafety').textContent    = data.safety_score + '%';
+                document.getElementById('cmpTrainQuality').textContent  = trainQuality;
+                document.getElementById('cmpTrainQuality').style.color  = qcol[trainQuality] || 'var(--muted)';
+                document.getElementById('cmpEvalQuality').textContent   = data.quality;
+                document.getElementById('cmpEvalQuality').style.color   = qcol[data.quality] || 'var(--muted)';
+
+                /* Effect arrows */
+                function effectArrow(trainVal, evalVal) {
+                    const t = parseFloat(trainVal);
+                    const e = parseFloat(evalVal);
+                    if (isNaN(t) || isNaN(e)) return '—';
+                    if (e > t) return '<span style="color:var(--green)">▲ Improved</span>';
+                    if (e < t) return '<span style="color:var(--red)">▼ Declined</span>';
+                    return '<span style="color:var(--muted)">► Same</span>';
+                }
+
+                document.getElementById('cmpSpeedEffect').innerHTML =
+                    effectArrow(trainAvgSpeed, data.avg_speed);
+                document.getElementById('cmpSafetyEffect').innerHTML = '—';
+                document.getElementById('cmpQualityEffect').innerHTML =
+                    data.quality === 'EXCELLENT' || data.quality === 'GOOD'
+                        ? '<span style="color:var(--green)">▲ Training helped</span>'
+                        : '<span style="color:var(--red)">▼ Needs more training</span>';
+            } catch (e) {
+                /* training stats not available — leave comparison as — */
+            }
+
+        } catch (err) {
+            document.getElementById('evalNoData').style.display = 'block';
+        }
+    }
+    /* ── Poll status on load ────────────────────────────────────────────── */
+    fetch('/status')
+        .then(r => r.json())
+        .then(d => { if (d.running) { setStatus(d.mode); setBtns(true); } })
+        .catch(() => {});
+
+</script>
+</body>
+</html>

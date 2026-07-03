@@ -1,0 +1,58 @@
+<viewsettings>
+    <scheme name="real world"/>
+    <background backgroundColor="34,139,34,255"
+                showGrid="0"
+                gridXSize="100"
+                gridYSize="100"/>
+
+    <viewport zoom="100" x="0" y="0" angle="0"/>
+
+    <vehicles>
+        <vehicleColorer scheme="given/assigned vehicle color"/>
+        <vehicle vehicleSize="4.00"
+                 vehicleExaggeration="3.0"
+                 showBlinker="1"
+                 drawMinGap="0"
+                 scaleSize="0"/>
+        <vehicleName show="1" size="16" color="255,255,255,255"
+                     bgColor="0,0,0,100"/>
+    </vehicles>
+
+    <pois>
+        <poiColorer scheme="given color"/>
+        <poi poiSize="2.5" poiExaggeration="3.0"/>
+        <poiName show="1" size="20" color="255,255,255,255"
+                 bgColor="0,0,0,150"/>
+        <poiType show="0"/>
+    </pois>
+
+    <edges>
+        <edgeColorer scheme="uniform"/>
+        <edge laneWidth="2.0"
+              showLinkDecals="0"
+              showRails="0"
+              hideConnectors="0"
+              laneShowBorders="1"/>
+        <edgeName show="0"/>
+        <streetName show="0"/>
+        <edgeValue show="0"/>
+        <lane color="34,139,34,255"/>
+    </edges>
+
+    <junctions>
+        <junctionColorer scheme="uniform"/>
+        <junction drawShape="1"
+                  drawCrossingsAndWalkingareas="0"
+                  color="34,139,34,255"/>
+        <junctionName show="0"/>
+        <junctionID show="0"/>
+    </junctions>
+
+    <additionals>
+        <addScheme name="uniform"/>
+    </additionals>
+
+    <legend showSizeLegend="0"
+            showColorLegend="0"
+            showParameterLegend="0"/>
+</viewsettings>

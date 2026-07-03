@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<net version="1.20" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="0.00,0.00" convBoundary="0.00,0.00,500.00,500.00"
+              origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+
+    <!-- Junctions -->
+    <junction id="J1" type="priority" x="0.00" y="500.00"/>
+    <junction id="J2" type="priority" x="500.00" y="500.00"/>
+    <junction id="J7" type="priority" x="0.00" y="0.00"/>
+    <junction id="J8" type="priority" x="500.00" y="0.00"/>
+
+    <!-- Middle Junctions -->
+    <junction id="J3" type="dead_end" x="0.00" y="333.50"/>
+    <junction id="J4" type="dead_end" x="500.00" y="333.50"/>
+    <junction id="J5" type="dead_end" x="0.00" y="167.00"/>
+    <junction id="J6" type="dead_end" x="500.00" y="167.00"/>
+    <junction id="J9" type="dead_end" x="167.00" y="500.00"/>
+    <junction id="J10" type="dead_end" x="167.00" y="0.00"/>
+    <junction id="J11" type="dead_end" x="333.00" y="500.00"/>
+    <junction id="J12" type="dead_end" x="333.00" y="0.00"/>
+
+    <!-- Horizontal Edges -->
+    <edge id="E1" from="J1" to="J2" priority="1">
+        <lane id="E1_0" index="0" speed="30.00" length="500.00" shape="0.00,500.00 500.00,500.00"/>
+    </edge>
+
+    <edge id="E2" from="J3" to="J4" priority="1">
+        <lane id="E2_0" index="0" speed="30.00" length="500.00" shape="0.00,333.50 500.00,333.50"/>
+    </edge>
+
+    <edge id="E3" from="J5" to="J6" priority="1">
+        <lane id="E3_0" index="0" speed="30.00" length="500.00" shape="0.00,167.00 500.00,167.00"/>
+    </edge>
+
+    <edge id="E4" from="J7" to="J8" priority="1">
+        <lane id="E4_0" index="0" speed="30.00" length="500.00" shape="0.00,0.00 500.00,0.00"/>
+    </edge>
+
+    <!-- Vertical Edges -->
+    <edge id="E5" from="J1" to="J7" priority="1">
+        <lane id="E5_0" index="0" speed="25.00" length="500.00" shape="0.00,500.00 0.00,0.00"/>
+    </edge>
+
+    <edge id="E6" from="J9" to="J10" priority="1">
+        <lane id="E6_0" index="0" speed="25.00" length="500.00" shape="167.00,500.00 167.00,0.00"/>
+    </edge>
+
+    <edge id="E7" from="J11" to="J12" priority="1">
+        <lane id="E7_0" index="0" speed="25.00" length="500.00" shape="333.00,500.00 333.00,0.00"/>
+    </edge>
+
+    <edge id="E8" from="J2" to="J8" priority="1">
+        <lane id="E8_0" index="0" speed="25.00" length="500.00" shape="500.00,500.00 500.00,0.00"/>
+    </edge>
+
+    <!-- Connections (FINAL FIX) -->
+
+    <!-- J1 -->
+    <connection from="E1" to="E5" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from="E5" to="E1" fromLane="0" toLane="0" dir="l" state="M"/>
+
+    <!-- J2 -->
+    <connection from="E1" to="E8" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from="E8" to="E1" fromLane="0" toLane="0" dir="l" state="M"/>
+
+    <!-- J7 -->
+    <connection from="E5" to="E4" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from="E4" to="E5" fromLane="0" toLane="0" dir="l" state="M"/>
+
+    <!-- J8 -->
+    <connection from="E4" to="E8" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from="E8" to="E4" fromLane="0" toLane="0" dir="l" state="M"/>
+
+</net>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    
+    <!-- Vehicle type definition - ONLY CARS with higher max speed -->
+    <vType id="car" accel="3.0" decel="4.5" sigma="0.5" length="5.0" minGap="2.5" maxSpeed="50.0" guiShape="passenger"/>
+    
+    <!-- Routes for Horizontal Roads -->
+    <route id="route_h1" edges="E1"/>
+    <route id="route_h2" edges="E2"/>
+    <route id="route_h3" edges="E3"/>
+    <route id="route_h4" edges="E4"/>
+    
+    <!-- Routes for Vertical Roads -->
+    <route id="route_v1" edges="E5"/>
+    <route id="route_v2" edges="E6"/>
+    <route id="route_v3" edges="E7"/>
+    <route id="route_v4" edges="E8"/>
+    
+    <!-- Vehicles on Horizontal Road 1 (Top) - FASTER SPEEDS -->
+    <vehicle id="veh_h1_1" type="car" route="route_h1" depart="0" departPos="10" departSpeed="38.4" color="255,0,0"/>
+    <vehicle id="veh_h1_2" type="car" route="route_h1" depart="0" departPos="60" departSpeed="35.2" color="0,0,255"/>
+    <vehicle id="veh_h1_3" type="car" route="route_h1" depart="0" departPos="110" departSpeed="36.8" color="255,165,0"/>
+    <vehicle id="veh_h1_4" type="car" route="route_h1" depart="0" departPos="160" departSpeed="40.0" color="0,255,0"/>
+    
+    <!-- Vehicles on Horizontal Road 2 (Middle-Top) - FASTER SPEEDS -->
+    <vehicle id="veh_h2_1" type="car" route="route_h2" depart="0" departPos="20" departSpeed="40.0" color="128,0,128"/>
+    <vehicle id="veh_h2_2" type="car" route="route_h2" depart="0" departPos="70" departSpeed="33.6" color="255,255,0"/>
+    <vehicle id="veh_h2_3" type="car" route="route_h2" depart="0" departPos="120" departSpeed="38.4" color="0,255,255"/>
+    <vehicle id="veh_h2_4" type="car" route="route_h2" depart="0" departPos="170" departSpeed="36.8" color="255,0,255"/>
+    
+    <!-- Vehicles on Horizontal Road 3 (Middle-Bottom) - FASTER SPEEDS -->
+    <vehicle id="veh_h3_1" type="car" route="route_h3" depart="0" departPos="15" departSpeed="35.2" color="165,42,42"/>
+    <vehicle id="veh_h3_2" type="car" route="route_h3" depart="0" departPos="60" departSpeed="40.0" color="255,192,203"/>
+    <vehicle id="veh_h3_3" type="car" route="route_h3" depart="0" departPos="105" departSpeed="38.4" color="50,205,50"/>
+    <vehicle id="veh_h3_4" type="car" route="route_h3" depart="0" departPos="150" departSpeed="36.8" color="0,0,128"/>
+    
+    <!-- Vehicles on Horizontal Road 4 (Bottom) - FASTER SPEEDS -->
+    <vehicle id="veh_h4_1" type="car" route="route_h4" depart="0" departPos="20" departSpeed="38.4" color="0,128,128"/>
+    <vehicle id="veh_h4_2" type="car" route="route_h4" depart="0" departPos="70" departSpeed="40.0" color="128,128,0"/>
+    <vehicle id="veh_h4_3" type="car" route="route_h4" depart="0" departPos="120" departSpeed="33.6" color="128,0,0"/>
+    <vehicle id="veh_h4_4" type="car" route="route_h4" depart="0" departPos="170" departSpeed="41.6" color="192,192,192"/>
+    
+    <!-- Vehicles on Vertical Road 1 (Left) - FASTER SPEEDS -->
+    <vehicle id="veh_v1_1" type="car" route="route_v1" depart="0" departPos="20" departSpeed="32.0" color="255,215,0"/>
+    <vehicle id="veh_v1_2" type="car" route="route_v1" depart="0" departPos="80" departSpeed="30.4" color="255,127,80"/>
+    <vehicle id="veh_v1_3" type="car" route="route_v1" depart="0" departPos="140" departSpeed="28.8" color="240,230,140"/>
+    
+    <!-- Vehicles on Vertical Road 2 (Middle-Left) - FASTER SPEEDS -->
+    <vehicle id="veh_v2_1" type="car" route="route_v2" depart="0" departPos="20" departSpeed="30.4" color="250,128,114"/>
+    <vehicle id="veh_v2_2" type="car" route="route_v2" depart="0" departPos="90" departSpeed="32.0" color="238,130,238"/>
+    <vehicle id="veh_v2_3" type="car" route="route_v2" depart="0" departPos="160" departSpeed="30.4" color="75,0,130"/>
+    
+    <!-- Vehicles on Vertical Road 3 (Middle-Right) - FASTER SPEEDS -->
+    <vehicle id="veh_v3_1" type="car" route="route_v3" depart="0" departPos="25" departSpeed="28.8" color="220,20,60"/>
+    <vehicle id="veh_v3_2" type="car" route="route_v3" depart="0" departPos="95" departSpeed="32.0" color="64,224,208"/>
+    <vehicle id="veh_v3_3" type="car" route="route_v3" depart="0" departPos="165" departSpeed="30.4" color="218,112,214"/>
+    
+    <!-- Vehicles on Vertical Road 4 (Right) - FASTER SPEEDS -->
+    <vehicle id="veh_v4_1" type="car" route="route_v4" depart="0" departPos="25" departSpeed="32.0" color="221,160,221"/>
+    <vehicle id="veh_v4_2" type="car" route="route_v4" depart="0" departPos="95" departSpeed="28.8" color="210,180,140"/>
+    <vehicle id="veh_v4_3" type="car" route="route_v4" depart="0" departPos="160" departSpeed="33.6" color="245,245,220"/>
+    
+</routes>
